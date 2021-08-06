@@ -1,0 +1,19 @@
+{
+    "Requests": {
+        "Free": 2000000,
+        "PerRequest": 0.0000004,
+        "CudPerRequest": 0.000000332
+    },
+    "Memory": {
+        "Free": 360000,
+        "GiBPerSecond": 0.00000250,
+        "CudGiBPerSecond": 0.000002075,
+        "IdlePerSecond": 0.00000250
+    },
+    "Vcpu": {
+        "FreeSeconds": 180000,
+        "PerSecond": 0.00002400,
+        "CudPerSecond": 0.00001992,
+        "IdlePerSecond": 0.00000250
+    }
+}
