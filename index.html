@@ -1,0 +1,44 @@
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['line']});
+      google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('number', 'Minute');
+      data.addColumn('number', 'Price');
+      data.addColumn('number', 'xx');
+    //   data.addColumn('number', 'xxx');
+
+      var rpm = 3 * 60;
+      var k = .05;
+      const r = [...Array(1000).keys()];
+      r.forEach(i => data.addRow([i, (rpm * Math.sin(i*k))+rpm, 0]));
+
+      var options = {
+        chart: {
+          title: 'Cloud Run Pricing',
+          subtitle: 'Per Minute'
+        },
+        width: 900,
+        height: 500,
+        axes: {
+          x: {
+            0: {side: 'top'}
+          }
+        }
+      };
+
+      var chart = new google.charts.Line(document.getElementById('line_top_x'));
+
+      chart.draw(data, google.charts.Line.convertOptions(options));
+    }
+  </script>
+</head>
+<body>
+  <div id="line_top_x"></div>
+</body>
+</html>
