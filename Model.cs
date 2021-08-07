@@ -60,20 +60,29 @@ namespace PricingApp
 
             for (int minute = 1; minute < MonthlyMinutes; minute++)
             {
-                double averageRequestsPerMinute = averageRequestsPerSecond * 60;
+                double averageRequestsPerMinute = averageRequestsPerSecond * 60.0;
                 int requestsPerMinute = (int)((averageRequestsPerMinute * Math.Sin(minute * k)) + 
                     averageRequestsPerMinute);
-                double requestsPerSecond = requestsPerMinute / 60;
+                double requestsPerSecond = requestsPerMinute / 60.0;
                 
-                var request = new RequestProfile(Vcpu / requestsPerSecond, GibMemory / requestsPerSecond);
-                var calculator = new Calculator();
-                double price = calculator.PerSecond(request) * 60;
+                if (requestsPerSecond > 0)
+                {
+                    var request = new RequestProfile(Vcpu / requestsPerSecond, GibMemory / requestsPerSecond);
+                    var calculator = new Calculator();
+                    double price = calculator.PerSecond(request) * 60.0;
 
-                perMinute.Add(new PerMinute(minute, 
-                    request.VcpuPerRequest, 
-                    request.GiBMemoryPerRequest, 
-                    LastRequests(minute) + requestsPerMinute,
-                    price));
+                    perMinute.Add(new PerMinute(minute, 
+                        request.VcpuPerRequest, 
+                        request.GiBMemoryPerRequest, 
+                        LastRequests(minute) + requestsPerMinute,
+                        price));
+                }
+                else
+                {
+                    perMinute.Add(
+                        new PerMinute(minute,0, 0, LastRequests(minute), 0)
+                    );
+                }
             }
             
             var result = new Price(perMinute.Sum(p => p.Price), perMinute);
