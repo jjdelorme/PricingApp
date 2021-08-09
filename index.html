@@ -5,6 +5,14 @@
       google.charts.load('current', {'packages':['line']});
       google.charts.setOnLoadCallback(drawChart);
 
+    function getData() {
+      const userAction = async () => {
+        const response = await fetch('/bursty');
+        const myJson = await response.json(); //extract JSON from the http response
+        // do something with myJson
+      }      
+    }
+
     function drawChart() {
 
       var data = new google.visualization.DataTable();

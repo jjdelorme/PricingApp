@@ -15,11 +15,15 @@ var model = new Model();
 
 // app.Run();
 
-var bursty = model.Bursty(1.0, 3.0, 1);
+var bursty = model.Bursty(1.0, 3.0, 300);
+var steady = model.Steady(1.0, 3.0, 300);
 
-var json = System.Text.Json.JsonSerializer.Serialize(bursty);
+// var burstyJson = System.Text.Json.JsonSerializer.Serialize(bursty);
+// var burstyJson = System.Text.Json.JsonSerializer.Serialize(bursty);
 
-Console.WriteLine(json);
+
+Console.WriteLine($"Bursty: {bursty.Requests}, {bursty.PerMonth}");
+Console.WriteLine($"Steady: {steady.Requests}, {steady.PerMonth}");
 
 // foreach (var minute in bursty.PerMinute)
 // {
