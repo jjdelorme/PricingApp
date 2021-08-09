@@ -39,11 +39,11 @@ namespace PricingApp
 
         public Price Bursty(double Vcpu, double GibMemory, double averageRequestsPerSecond)
         {
-            const int MonthlyMinutes = (int)(730 * 60);
+            const int DailyMinutes = (int)(24 * 60);
             const double k = 0.05;
             List<PerMinute> perMinute = new List<PerMinute>();
 
-            for (int minute = 1; minute < MonthlyMinutes; minute++)
+            for (int minute = 1; minute < DailyMinutes; minute++)
             {
                 double averageRequestsPerMinute = averageRequestsPerSecond * 60.0;
                 int requestsPerMinute = (int)((averageRequestsPerMinute * Math.Sin(minute * k)) + 

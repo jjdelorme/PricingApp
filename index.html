@@ -5,26 +5,28 @@
       google.charts.load('current', {'packages':['line']});
       google.charts.setOnLoadCallback(drawChart);
 
-    function getData() {
-      const userAction = async () => {
-        const response = await fetch('/bursty');
-        const myJson = await response.json(); //extract JSON from the http response
-        // do something with myJson
-      }      
+    async function getData() {
+      const response = await fetch('/bursty');
+      return response.json();
     }
 
-    function drawChart() {
+    async function drawChart() {
+
+      const json = await getData();
+      // console.log(json);
 
       var data = new google.visualization.DataTable();
       data.addColumn('number', 'Minute');
       data.addColumn('number', 'Price');
-      data.addColumn('number', 'xx');
+      data.addColumn('number', 'Requests');
     //   data.addColumn('number', 'xxx');
 
-      var rpm = 3 * 60;
-      var k = .05;
-      const r = [...Array(1000).keys()];
-      r.forEach(i => data.addRow([i, (rpm * Math.sin(i*k))+rpm, 0]));
+      // var rpm = 3 * 60;
+      // var k = .05;
+      // const r = [...Array(1000).keys()];
+      // r.forEach(i => data.addRow([i, (rpm * Math.sin(i*k))+rpm, 0]));
+
+      json.perMinute.forEach(m => data.addRow([m.minute, m.price, m.requests]));
 
       var options = {
         chart: {
