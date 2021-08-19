@@ -4,15 +4,11 @@ namespace PricingApp
 {    
     public class Calculator
     {
+        public record Price(int Instances, double TotalPrice);
         private CloudRunPricing _pricing = CloudRunPricing.GetPricing();
 
-        public const double SecondsPerMonth = 3600 * 730;
+        //public const double SecondsPerMonth = 3600 * 730;
         
-        public double MonthlyCost(RequestProfile request, double RequestsPerSecond)
-        {
-            return PerSecond(request) * RequestsPerSecond * SecondsPerMonth;
-        }
-
         public double PerSecond(RequestProfile request)
         {
             double price = request.VcpuPerRequest * _pricing.Vcpu.PerSecond +
@@ -22,18 +18,24 @@ namespace PricingApp
             return price;
         }
 
-        public double PerMinute(double vcpu, double gib, double requests, double concurrency)
+        public void PerMinute(double vcpu, double gib, double requests, double concurrency, 
+            out int instances, out double price)
         {
             double requestsPrice = requests * _pricing.Requests.PerRequest;
             double computePrice = 
-                (vcpu * _pricing.Vcpu.PerSecond * 60) +
-                (gib * _pricing.Memory.GiBPerSecond * 60);
+                (vcpu * _pricing.Vcpu.PerSecond * 60.0) +
+                (gib * _pricing.Memory.GiBPerSecond * 60.0);
 
-            int instances = (int)Math.Ceiling(requests/concurrency);
+            instances = (int)Math.Ceiling((requests/60.0)/concurrency);
 
-            double price = (instances * computePrice) + requestsPrice;
-
-            return price;
+            price = (instances * computePrice) + requestsPrice;
         }
+
+        public void PerMinuteIdle(double vcpu, double gib, double requests, double concurrency, 
+            out int instances, out double price)
+            {
+                instances = 0;
+                price = 0;
+            }
     }
 }

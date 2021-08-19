@@ -19,6 +19,7 @@
       data.addColumn('number', 'Minute');
       data.addColumn('number', 'Price');
       data.addColumn('number', 'Requests');
+      data.addColumn('number', 'Instances');
     //   data.addColumn('number', 'xxx');
 
       // var rpm = 3 * 60;
@@ -26,7 +27,7 @@
       // const r = [...Array(1000).keys()];
       // r.forEach(i => data.addRow([i, (rpm * Math.sin(i*k))+rpm, 0]));
 
-      json.perMinute.forEach(m => data.addRow([m.minute, m.price , m.requests]));
+      json.perMinute.forEach(m => data.addRow([m.minute, m.price , m.requests, m.instances]));
 
       var options = {
         chart: {
@@ -38,12 +39,14 @@
         axes: {
           x: {
             0: {side: 'top'},
-            1: {logScale: false}
+            1: {logScale: false},
+            2: {logScale: false}
           }
         },
         series:{
           0:{targetAxisIndex:0},
-          1:{targetAxisIndex:1}
+          1:{targetAxisIndex:1},
+          2:{targetAxisIndex:2}
         }
       };
 
