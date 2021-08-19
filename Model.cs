@@ -6,9 +6,9 @@ namespace PricingApp
 {
     public class Model
     {
-        public record PerMinute(int Minute, double Vcpu, double GibMemory, int Requests, double Price);
-        public record Price(double PerMonth, int Requests, List<PerMinute> PerMinute);
-        public Price Steady(double Vcpu, double GibMemory, double requestsPerSecond)
+        public record PerMinute(int Minute, double Vcpu, double GibMemory, double Requests, double Price);
+        public record Price(double PerMonth, double Requests, List<PerMinute> PerMinute);
+        public Price Steady(double Vcpu, double GibMemory, double requestsPerSecond, double concurrency = 100)
         {
             var request = new RequestProfile(Vcpu / requestsPerSecond, GibMemory / requestsPerSecond);
             var calculator = new Calculator();
@@ -19,14 +19,14 @@ namespace PricingApp
             perMinute.Add(new PerMinute(1, 
                 request.VcpuPerRequest, 
                 request.GiBMemoryPerRequest, 
-                (int)(requestsPerSecond * 60),
+                (requestsPerSecond * 60),
                 price));
             
             for (int i = 1; i < (Calculator.SecondsPerMonth/60); i++)
             {
                 perMinute.Add(perMinute[i-1] with { 
                     Minute = i,
-                    Requests = (int)(requestsPerSecond * 60)
+                    Requests = (requestsPerSecond * 60)
                 });
             }
             
@@ -37,33 +37,38 @@ namespace PricingApp
             return result;
         }
 
-        public Price Bursty(double Vcpu, double GibMemory, double averageRequestsPerSecond)
+        public Price Bursty(double Vcpu, double GibMemory, double averageRequestsPerSecond, double concurrency = 100.0)
         {
+            // Pod is either running, idle or not running.  Concurrency determines the # of requests a single pod
+            // can handle at once.
+            // Vcpu and GiBMemory specify the pod size
+
             const int DailyMinutes = (int)(24 * 60);
             const double k = 0.05;
             List<PerMinute> perMinute = new List<PerMinute>();
+            Calculator calculator = new Calculator();
+            double averageRequestsPerMinute = averageRequestsPerSecond * 60.0;
+            double cumulativePrice = 0.0;
 
             for (int minute = 1; minute < DailyMinutes; minute++)
             {
-                double averageRequestsPerMinute = averageRequestsPerSecond * 60.0;
-                int requestsPerMinute = (int)((averageRequestsPerMinute * Math.Sin(minute * k)) + 
-                    averageRequestsPerMinute);
-                double requestsPerSecond = requestsPerMinute / 60.0;
-                
-                if (requestsPerSecond > 0)
+                double requests = (averageRequestsPerMinute * Math.Sin(minute * k)) + 
+                    averageRequestsPerMinute;
+                                
+                if (requests > 0)
                 {
-                    var request = new RequestProfile(Vcpu / requestsPerSecond, GibMemory / requestsPerSecond);
-                    var calculator = new Calculator();
-                    double price = calculator.PerSecond(request) * 60.0;
+                    double price = calculator.PerMinute(Vcpu, GibMemory, requests, concurrency);
+                    cumulativePrice += price;
 
                     perMinute.Add(new PerMinute(minute, 
-                        request.VcpuPerRequest, 
-                        request.GiBMemoryPerRequest, 
-                        requestsPerMinute,
-                        price));
+                        Vcpu, 
+                        GibMemory, 
+                        requests,
+                        cumulativePrice));
                 }
                 else
                 {
+                    // Calculate idle price?
                     perMinute.Add(
                         new PerMinute(minute, 0, 0, 0, 0)
                     );
@@ -71,7 +76,7 @@ namespace PricingApp
             }
             
             var result = new Price(
-                perMinute.Sum(p => p.Price), 
+                cumulativePrice, 
                 perMinute.Sum(r => r.Requests),
                 perMinute);
             return result;

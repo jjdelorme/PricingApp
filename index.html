@@ -26,7 +26,7 @@
       // const r = [...Array(1000).keys()];
       // r.forEach(i => data.addRow([i, (rpm * Math.sin(i*k))+rpm, 0]));
 
-      json.perMinute.forEach(m => data.addRow([m.minute, m.price, m.requests]));
+      json.perMinute.forEach(m => data.addRow([m.minute, m.price , m.requests]));
 
       var options = {
         chart: {
@@ -37,8 +37,13 @@
         height: 500,
         axes: {
           x: {
-            0: {side: 'top'}
+            0: {side: 'top'},
+            1: {logScale: false}
           }
+        },
+        series:{
+          0:{targetAxisIndex:0},
+          1:{targetAxisIndex:1}
         }
       };
 

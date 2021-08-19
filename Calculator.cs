@@ -1,3 +1,4 @@
+using System;
 
 namespace PricingApp
 {    
@@ -18,6 +19,20 @@ namespace PricingApp
                 request.GiBMemoryPerRequest * _pricing.Memory.GiBPerSecond + 
                 _pricing.Requests.PerRequest;
             
+            return price;
+        }
+
+        public double PerMinute(double vcpu, double gib, double requests, double concurrency)
+        {
+            double requestsPrice = requests * _pricing.Requests.PerRequest;
+            double computePrice = 
+                (vcpu * _pricing.Vcpu.PerSecond * 60) +
+                (gib * _pricing.Memory.GiBPerSecond * 60);
+
+            int instances = (int)Math.Ceiling(requests/concurrency);
+
+            double price = (instances * computePrice) + requestsPrice;
+
             return price;
         }
     }

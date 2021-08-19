@@ -10,8 +10,8 @@ var app = builder.Build();
 var model = new Model();
 
 app.MapGet("/", () => File.ReadAllText("index.html"));
-app.MapGet("/steady", () => model.Steady(1.0, 3.0, 1));
-app.MapGet("/bursty", () => model.Bursty(1.0, 3.0, 1));
+app.MapGet("/steady", () => model.Steady(1.0, 3.0, 300.0, 100.0));
+app.MapGet("/bursty", () => model.Bursty(1.0, 3.0, 300.0, 100.0));
 
 app.Run();
 
