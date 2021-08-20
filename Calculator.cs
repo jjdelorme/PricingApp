@@ -43,6 +43,13 @@ namespace PricingApp
 
         public void PerMinute(int requests, out int instances, out double price)
         {
+            if (requests <= 0)
+            {
+                price = 0;
+                instances = 0;
+                return;
+            }
+            
             double requestsPrice = requests * _pricing.Requests.PerRequest;
 
             instances = (int)Math.Ceiling((requests/60.0)/_concurrency);

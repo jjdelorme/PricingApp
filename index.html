@@ -6,7 +6,7 @@
       google.charts.setOnLoadCallback(drawChart);
 
     async function getData() {
-      const response = await fetch('/bursty');
+      const response = await fetch('/bursty?vcpu=0.5&gib=1.0&rps=300&c=100.0');
       return response.json();
     }
 
