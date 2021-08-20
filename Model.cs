@@ -40,49 +40,34 @@ namespace PricingApp
 
         public Price Bursty(double Vcpu, double GibMemory, double averageRequestsPerSecond, double concurrency = 100.0)
         {
-            // Pod is either running, idle or not running.  Concurrency determines the # of requests a single pod
-            // can handle at once.
-            // Vcpu and GiBMemory specify the pod size
-
-            const int DailyMinutes = (int)(24 * 60);
+            const int DailyMinutes = 24 * 60;
             const double k = 0.015;
             List<PerMinute> perMinute = new List<PerMinute>();
-            Calculator calculator = new Calculator();
-            double averageRequestsPerMinute = averageRequestsPerSecond * 60.0;
-            double cumulativePrice = 0.0;
+            Calculator calculator = new Calculator(Vcpu, GibMemory, concurrency);
 
-            for (int minute = 1; minute < DailyMinutes; minute++)
+            for (int minute = 1; minute < DailyMinutes+1; minute++)
             {
                 int instances;
                 double price;
 
-                double requests = Math.Ceiling((averageRequestsPerMinute * 
-                    Math.Sin(minute * k)) + averageRequestsPerMinute);
+                // Model requests.
+                int requests = 60 * (int)(Math.Ceiling((averageRequestsPerSecond * 
+                    Math.Sin(minute * k)) + averageRequestsPerSecond));
                                 
-                if (requests > 5000) // arbitrarily creating a bottom
-                {
-                    calculator.PerMinute(Vcpu, GibMemory, requests, concurrency, 
-                        out instances, out price);
-                }
-                else
-                {
-                    calculator.PerMinuteIdle(Vcpu, GibMemory, requests, concurrency, 
-                        out instances, out price);                    
-                }
-                
-                cumulativePrice += price;
+                calculator.PerMinute(requests, out instances, out price);
 
                 perMinute.Add(new PerMinute(minute, 
                     instances,
                     requests,
-                    cumulativePrice));
+                    calculator.CumulativePrice));
             }
             
             var result = new Price(
-                cumulativePrice * 30, 
-                perMinute.Sum(r => r.Requests) * 30,
+                calculator.CumulativePrice * 30, 
+                calculator.CumulativeRequests * 30,
                 perMinute);
-            return result;
+
+            return result;            
         }
 
         // Assumes exponential growth

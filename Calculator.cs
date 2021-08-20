@@ -4,38 +4,62 @@ namespace PricingApp
 {    
     public class Calculator
     {
-        public record Price(int Instances, double TotalPrice);
-        private CloudRunPricing _pricing = CloudRunPricing.GetPricing();
+        private double _vcpu, _gibMemory, _concurrency;
+        private int _cumulativeRequests;
+        private double _cumulativePrice;
+        private CloudRunPricing _pricing;
 
-        //public const double SecondsPerMonth = 3600 * 730;
-        
-        public double PerSecond(RequestProfile request)
+        private double _computePrice;
+
+        public double CumulativePrice { get { return _cumulativePrice;} }
+        public int CumulativeRequests { get { return _cumulativeRequests;} }
+
+        public Calculator(double vcpu, double gibMemory, double concurrency)
         {
-            double price = request.VcpuPerRequest * _pricing.Vcpu.PerSecond +
-                request.GiBMemoryPerRequest * _pricing.Memory.GiBPerSecond + 
-                _pricing.Requests.PerRequest;
-            
-            return price;
-        }
+            _vcpu = vcpu;
+            _gibMemory = gibMemory;
+            _concurrency = concurrency;
+            _cumulativeRequests = 0;
+            _cumulativePrice = 0;
 
-        public void PerMinute(double vcpu, double gib, double requests, double concurrency, 
-            out int instances, out double price)
+            _pricing = CloudRunPricing.GetPricing();
+            
+            _computePrice = 
+                (_vcpu * _pricing.Vcpu.PerSecond) +
+                (_gibMemory * _pricing.Memory.GiBPerSecond);            
+        }        
+       
+        public void PerSecond(int requests, out int instances, out double price)
         {
             double requestsPrice = requests * _pricing.Requests.PerRequest;
-            double computePrice = 
-                (vcpu * _pricing.Vcpu.PerSecond * 60.0) +
-                (gib * _pricing.Memory.GiBPerSecond * 60.0);
 
-            instances = (int)Math.Ceiling((requests/60.0)/concurrency);
+            instances = (int)Math.Ceiling(requests/_concurrency);
 
-            price = (instances * computePrice) + requestsPrice;
+            price = (instances * _computePrice) + requestsPrice;
+
+            _cumulativePrice += price;
+            _cumulativeRequests += requests;
+        }
+
+        public void PerMinute(int requests, out int instances, out double price)
+        {
+            double requestsPrice = requests * _pricing.Requests.PerRequest;
+
+            instances = (int)Math.Ceiling((requests/60.0)/_concurrency);
+
+            price = (instances * _computePrice) + requestsPrice;
+            
+            _cumulativePrice += price;
+            _cumulativeRequests += requests;            
         }
 
         public void PerMinuteIdle(double vcpu, double gib, double requests, double concurrency, 
-            out int instances, out double price)
-            {
-                instances = 0;
-                price = 0;
-            }
+        out int instances, out double price)
+        {
+            instances = 0;
+            price = 0;
+        }
+
+        public record Price(int Instances, double TotalPrice);
     }
 }
